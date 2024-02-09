@@ -5,31 +5,36 @@ from awsiot import mqtt_connection_builder
 
 # Function to handle received messages on the "receive" topic
 def on_receive_message_received(topic, payload, dup, qos, retain, **kwargs):
+    # Print the received message data, Data is in payload.decode('utf-8')
     print("Received message on topic '{}': {}".format(topic, payload.decode('utf-8')))
-    
     return
 
 # Function to subscribe to a specific topic
 def subscribe_to_topic(mqtt_connection, topic, qos):
+    # Subscribe to the topic
     subscribe_future, _ = mqtt_connection.subscribe(
         topic=topic,
         qos=qos,
         callback=on_receive_message_received,
     )
     subscribe_result = subscribe_future.result()
+    # Print the subscription result
     print("Subscribed to topic '{}' with {}".format(topic, str(subscribe_result['qos'])))
     return
 
 # Function to publish data to a specific topic
 def publish_to_topic(mqtt_connection, topic, json_string, delay, qos):
     while True:
+        # Publish the message
         mqtt_connection.publish(
             topic=topic,
             payload=json_string,
             qos=qos,
         )
+        # Print the published message
         print("Published message to topic '{}': {}".format(topic, json_string))
-        time.sleep(delay)  # delay in seconds between messages
+        # Delay for the specified number of seconds
+        time.sleep(delay)
         return
 
 # AWS IoT configuration
@@ -51,7 +56,7 @@ mqtt_connection = mqtt_connection_builder.mtls_from_path(
     ca_filepath=root_ca_path,
     client_id=client_id,
     clean_session=False,
-        keep_alive_secs=30,
+    keep_alive_secs=30,
     http_proxy_options=proxy_options,
 )
 
@@ -66,13 +71,14 @@ subscribe_to_topic(mqtt_connection, "AWS_Python", mqtt.QoS.AT_LEAST_ONCE)
 count = 1
 while True:
     pass
+    # Uncomment the following lines to publish messages
     # print("\ncount",count)
     # json_string = json.dumps({"message": count})
     # publish_to_topic(mqtt_connection, "AWS_Python", json_string, 5, mqtt.QoS.AT_LEAST_ONCE)
     # count += 1
     # time.sleep(4)
 
+# Uncomment the following lines to disconnect
 # print("Disconnected!")
 # disconnect_future = mqtt_connection.disconnect()
 # disconnect_future.result()
-
